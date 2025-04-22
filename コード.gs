@@ -1,33 +1,62 @@
 
+//https://drive.google.com/drive/folders/1jGkhWFuz9WsmWlmJeSBlHJ2kDon08sgr
+//https://docs.google.com/spreadsheets/d/1ekYwgxdgtC2p4mjJbS2SM9-AKgH7c9PN2pIp2a3vrGM/edit?gid=0#gid=0
+
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
   ui.createMenu('Option')
-    .addItem('挨拶する', 'sayHello')
+    .addItem('FileMove', '_main')
     .addToUi();
 }
 
+function _main()
+{
 
-function moveFilesFromSheet() {
+  _moveFilesFromSheet();
+
+}
+
+function _moveFilesFromSheet() {
+
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   const data = sheet.getDataRange().getValues();
-  
+
+  const startRow = 2; 
+  const colIndex = 1; 
+
+  const folderId = data[0][1]; //移動先のフォルダIDを確保
+  const fileList =  data
+    .slice(startRow)                 // 下に向かっての行だけを対象に
+    .map(row => row[colIndex])      // 指定列の値を取り出し
+    .filter(value => value !== ""); // 空白（""）を除外
+
+    var statusData = new Array();
+
   // ヘッダーをスキップ
-  for (let i = 1; i < data.length; i++) {
-    const url = data[i][0];
-    const targetFolderId = data[i][1];
+  for (let i = 0; i < fileList.length; i++) {
+    const url = fileList [i];
 
     const fileId = extractIdFromUrl(url);
-    if (!fileId || !targetFolderId) {
+    if (!fileId || !folderId) {
       Logger.log(`スキップ: 行 ${i + 1} → 入力不備`);
       continue;
     }
 
     try {
-      moveSharedDriveFile(fileId, targetFolderId);
+      moveSharedDriveFile(fileId, folderId);
+      statusData.push("移動成功");
     } catch (e) {
       Logger.log(`エラー: 行 ${i + 1} → ${e.message}`);
+      statusData.push("移動失敗");
     }
   }
+
+  const statuslist =statusData.map(status => [status]);
+
+  
+  sheet.getRange(3, 3, statuslist.length, 1).setValues(statuslist); // B2セルから縦に書き出し
+
+
 }
 
 function extractIdFromUrl(url) {
