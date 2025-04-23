@@ -1,7 +1,4 @@
 
-//https://drive.google.com/drive/folders/1jGkhWFuz9WsmWlmJeSBlHJ2kDon08sgr
-//https://docs.google.com/spreadsheets/d/1ekYwgxdgtC2p4mjJbS2SM9-AKgH7c9PN2pIp2a3vrGM/edit?gid=0#gid=0
-
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
   ui.createMenu('Option')
@@ -9,6 +6,7 @@ function onOpen() {
     .addToUi();
 }
 
+//メイン
 function _main()
 {
   _moveFilesFromSheet();
@@ -34,7 +32,7 @@ function _moveFilesFromSheet() {
 
   for (let i = 0; i < fileList.length; i++) {
     const url = fileList [i];
-    const fileId = extractIdFromUrl(url);
+    const fileId = _extractIdFromUrl(url);
 
     if (!fileId || !folderId) {
       Logger.log(`スキップ: 行 ${i + 1} → 入力不備`);
@@ -42,7 +40,7 @@ function _moveFilesFromSheet() {
     }
 
     try {
-      moveSharedDriveFile(fileId, folderId);
+      _moveSharedDriveFile(fileId, folderId);
       statusData.push("移動成功");
     } catch (e) {
       Logger.log(`エラー: 行 ${i + 1} → ${e.message}`);
@@ -56,13 +54,13 @@ function _moveFilesFromSheet() {
 }
 
 //URLからIDだけ抜き取る
-function extractIdFromUrl(url) {
+function _extractIdFromUrl(url) {
   const match = url.match(/[-\w]{25,}/);
   return match ? match[0] : null;
 }
 
 //ファイルをドライブに移動させる
-function moveSharedDriveFile(fileId, targetFolderId) {
+function _moveSharedDriveFile(fileId, targetFolderId) {
   const file = Drive.Files.get(fileId, { supportsAllDrives: true });
   const previousParents = file.parents.map(p => p.id).join(',');
 
@@ -80,65 +78,3 @@ function moveSharedDriveFile(fileId, targetFolderId) {
   Logger.log(` 移動成功: ${fileId} → ${targetFolderId}`);
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-function moveSharedDriveFile(fileId, targetFolderId) {
-  const file = Drive.Files.get(fileId, { supportsAllDrives: true });
-  const previousParents = file.parents.map(p => p.id).join(',');
-
-  Drive.Files.update(
-    { parents: [{ id: targetFolderId }] },
-    fileId,
-    null,  // ← mediaData は不要
-    {
-      addParents: targetFolderId,
-      removeParents: previousParents,
-      supportsAllDrives: true
-    }
-  );
-
-  Logger.log(`ファイル ${fileId} を ${targetFolderId} に移動しました`);
-}
-
-
-
-function extractIdFromUrl(url) {
-  // ファイル or フォルダのIDをURLから抜き出す
-  const match = url.match(/[-\w]{25,}/);
-  return match ? match[0] : null;
-}
-
-
-function moveFileByUrls(fileUrl, folderUrl) {
-
-  //const fileId = extractIdFromUrl(fileUrl);
-  //const folderId = extractIdFromUrl(folderUrl);
-
-//https://drive.google.com/file/d/13aJ3HyqeTSjiNkxv48cJCiXgc3V8YjEr/view?usp=drivesdk
-  const fileId = "13aJ3HyqeTSjiNkxv48cJCiXgc3V8YjEr";
-  const folderId = "1jGkhWFuz9WsmWlmJeSBlHJ2kDon08sgr";
-  
-  if (!fileId || !folderId) {
-    Logger.log('URLからIDが取得できませんでした');
-    return;
-  }
-
-  moveSharedDriveFile(fileId, folderId);
-}
-*/
