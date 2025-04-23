@@ -32,7 +32,6 @@ function _moveFilesFromSheet() {
 
     var statusData = new Array();
 
-  // ヘッダーをスキップ
   for (let i = 0; i < fileList.length; i++) {
     const url = fileList [i];
 
